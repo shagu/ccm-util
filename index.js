@@ -67,7 +67,49 @@ const characters = {
   // 'world_state'
 }
 
+const languagemap = {
+  // skill: spell
+  98: 668, // Language: Common
+  113: 671, // Language: Darnassian
+  139: 815, // Language: Demon Tongue
+  138: 814, // Language: Draconic
+  759: 29932, // Language: Draenei
+  111: 672, // Language: Dwarven
+  313: 7340, // Language: Gnomish
+  673: 17737, // Language: Gutterspeak
+  141: 817, // Language: Old Tongue
+  109: 669, // Language: Orcish
+  115: 670, // Language: Taurahe
+  137: 813, // Language: Thalassian
+  140: 816, // Language: Titan
+  315: 7341, // Language: Troll
+}
+
 const mariadb = require('mariadb')
+
+async function fixlang(oregon) {
+  console.log("Fixing Languages")
+  const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    let rows = await conn.query("SELECT * from " + oregon + ".character_skills")
+    rows.forEach(async function(row) {
+      if(languagemap[row.skill]) {
+        console.log(`Adding Spell: ${languagemap[row.skill]} to Character: ${row.guid}`)
+        let query = "INSERT INTO " + oregon + `.character_spell (guid, spell, active, disabled) VALUES (${row.guid}, ${languagemap[row.skill]}, 1, 0)`
+        let res = await conn.query(query)
+      }
+    });
+  } catch (err) {
+  	throw err
+  } finally {
+	  if (conn) conn.release()
+    return pool
+  }
+}
+
 async function convert(cmangos, oregon, table, replaces) {
   console.log("Processing: " + table)
   const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
@@ -117,14 +159,23 @@ async function convert(cmangos, oregon, table, replaces) {
       let res = await conn.query(query)
     });
   } catch (err) {
-  	throw err;
+  	throw err
   } finally {
-	  if (conn) conn.release();
+	  if (conn) conn.release()
     return pool
   }
 }
 
-// migrate characters
+let counter = 0
 for (const [key, value] of Object.entries(characters)) {
-  convert(cmangos_characters, oregon_characters, key, value).then((pool) => { pool.end() })
+  // Move CMaGNOS values into Oregon database
+  convert(cmangos_characters, oregon_characters, key, value).then((pool) => {
+    counter++
+    pool.end()
+
+    // Add Language Spells for each matching Skill
+    if (counter >= Object.keys(characters).length){
+      fixlang(oregon_characters).then((pool) => { pool.end() })
+    }
+  })
 }
