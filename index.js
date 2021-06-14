@@ -33,7 +33,7 @@ const characters = {
   // 'character_queststatus_monthly'
   'character_reputation': true,
   'character_skills': true,
-  // 'character_social'
+  'character_social': true,
   'character_spell': true,
   // 'character_spell_cooldown'
   // 'character_tutorial'
@@ -54,7 +54,7 @@ const characters = {
   // 'instance_reset'
   'item_instance': true,
   // 'item_instance_backup_pre_data_field_drop'
-  // 'item_loot'
+  'item_loot': true,
   'item_text': true,
   'mail': true,
   'mail_items': true,
