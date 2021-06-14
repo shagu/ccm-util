@@ -25,6 +25,7 @@ const characters = {
   'character_reputation': true,
   'character_spell': true,
   'characters': { ignore: { 'exploredZones': true, 'equipmentCache': true, 'ammoId': true, 'knownTitles': true, 'actionBars': true }, replace: { 'power1': 'powerMana', 'power2': 'powerRage', 'power3': 'powerFocus', 'power4': 'powerEnergy', 'power5': 'powerHappiness' }},
+  'guild': { fill: { 'createdate': 0 }},
   'guild_bank_item': true,
   'guild_member': true,
   'guild_rank': true,
