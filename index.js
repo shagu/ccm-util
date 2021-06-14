@@ -110,6 +110,8 @@ async function fixlang(oregon) {
   }
 }
 
+let threadcount = 0
+let dbcount = 0
 async function convert(cmangos, oregon, table, replaces) {
   console.log("Processing: " + table)
   const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
@@ -156,7 +158,15 @@ async function convert(cmangos, oregon, table, replaces) {
 
       query = query + ');'
 
-      let res = await conn.query(query)
+      threadcount++
+      let res = await conn.query(query).then(() => {
+        threadcount--
+
+        // Add Language Spells for each matching Skill
+        if ((threadcount === 0) && (dbcount >= Object.keys(characters).length)){
+          fixlang(oregon_characters).then((pool) => { pool.end() })
+        }
+      })
     });
   } catch (err) {
   	throw err
@@ -166,16 +176,6 @@ async function convert(cmangos, oregon, table, replaces) {
   }
 }
 
-let counter = 0
 for (const [key, value] of Object.entries(characters)) {
-  // Move CMaGNOS values into Oregon database
-  convert(cmangos_characters, oregon_characters, key, value).then((pool) => {
-    counter++
-    pool.end()
-
-    // Add Language Spells for each matching Skill
-    if (counter >= Object.keys(characters).length){
-      fixlang(oregon_characters).then((pool) => { pool.end() })
-    }
-  })
+  convert(cmangos_characters, oregon_characters, key, value).then((pool) => { pool.end(); dbcount++ })
 }
