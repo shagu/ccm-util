@@ -78,6 +78,11 @@ async function convert(cmangos, oregon, table, replaces) {
         if(typeof(escaped) === "string") {
           escaped = "'" + escaped.toString().replace(/'/g, "''") + "'"
         }
+
+        if ((replaces.fill) && (typeof(replaces.fill[key]) !== 'undefined')) {
+          escaped = replaces.fill[key]
+        }
+
         query = query + `${escaped}`
       }
 
