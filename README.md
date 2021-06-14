@@ -1,4 +1,9 @@
-# Migrate from CMaNGOS-TBC to OregonCore (Talamortis branch)
+# cmangos-to-oregon
+A low effort attempt that helps migrating from CMaNGOS-TBC to OregonCore (Talamortis branch).
+This script is still incomplete, please look into the index.js "TODO" markers for details.
+Depending on the activity and size of your server, you might want to add more tables.
+
+## Usage
 
 1. Import Backups
 Import your CMaNGOS sql dumps to a database of your choice
