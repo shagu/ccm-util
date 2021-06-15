@@ -1,54 +1,66 @@
-# cmangos-to-oregon
-A low effort attempt that helps migrating from CMaNGOS-TBC to OregonCore (Talamortis branch).
-This script is still incomplete, please look into the index.js "TODO" markers for details.
-Depending on the activity and size of your server, you might want to add more tables.
+# cross core migration
+A low effort attempt that helps migrating character data between different world of warcraft emulators.
+It provides helpful functions and wow specific mappings to ease the task of mapping different sql tables.
 
-## Usage
+## Dependencies
+Make sure to have nodejs and npm installed.
 
-1. Import Backups
-Import your CMaNGOS sql dumps to a database of your choice
+    # pacman -Sy nodejs npm
+    $ git clone https://github.com/shagu/ccm-helper
+    $ cd ccm-helper
+    $ npm install
 
-```
-mysql -umangos -p'mangos' cmangos_chars < tbc-prod-chars-20210614.sql
-mysql -umangos -p'mangos' cmangos_logon < tbc-prod-logon-20210614.sql
-```
+## Getting Started
+Setup both - the source and the destination - databases. The destination tables
+will be truncated and filled with the mapped source values.
 
-2. Setup OregonCore
-3. Setup the importer
+    $ node ccm.js <script> <source> <destination>
 
-```
-pacman -Sy npm
-npm install mariadb
-vim index.js
-    # configure your database and passwords
-    # at the top of the index.js file.
+Where <script> is one of the already available migration scripts.
+This is the place where you probably have to write your own. Check the
+existing ones and their source to understand how this works.
 
-node index.js
-```
+An example usage would be:
 
-The output will look like this:
+    $ node ccm.js cmangos-to-oregon-characters cmangos_chars characters
 
-```
-$ node index.js
-Processing: character_homebind
-Processing: character_inventory
-Processing: character_pet
-Processing: character_queststatus
-Processing: character_reputation
-Processing: character_spell
-Processing: characters
-Processing: guild_bank_item
-Processing: guild_member
-Processing: guild_rank
-Processing: item_instance
-Processing: mail
-Processing: mail_items
-Processing: item_text
-Processing: pet_spell
-Processing: guild_bank_right
-Processing: guild_bank_tab
-Processing: character_action
-Processing: character_skills
-Processing: guild_eventlog
-$
-```
+This example would migrate cmangos-tbc data from the `cmangos_chars` database into
+the oregon characters database which is called `characters`.
+
+If everything went fine, the output should look like this:
+
+    $ node ccm.js cmangos-to-oregon-characters cmangos_chars characters
+    Processing: character_action
+    Processing: character_homebind
+    Processing: character_inventory
+    Processing: character_pet
+    Adding "character_pet.abdata" to finalize queue
+    Processing: character_queststatus
+    Processing: character_reputation
+    Processing: character_skills
+    Processing: character_social
+    Processing: character_spell
+    Adding "character_spell.languages" to finalize queue
+    Processing: character_spell_cooldown
+    Processing: character_tutorial
+    Processing: characters
+    Adding "characters.data" to finalize queue
+    Processing: guild
+    Processing: guild_bank_item
+    Processing: guild_bank_right
+    Processing: guild_bank_tab
+    Processing: guild_eventlog
+    Processing: guild_member
+    Processing: guild_rank
+    Processing: item_instance
+    Processing: item_loot
+    Processing: item_text
+    Processing: mail
+    Processing: mail_items
+    Processing: pet_aura
+    Processing: pet_spell
+    Processing: pet_spell_cooldown
+    Finalizing: character_pet.abdata
+    Finalizing: character_spell.languages
+    Finalizing: characters.data
+    $
