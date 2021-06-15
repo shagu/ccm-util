@@ -35,8 +35,8 @@ const characters = {
   'character_skills': true,
   'character_social': true,
   'character_spell': true,
-  // 'character_spell_cooldown'
-  // 'character_tutorial'
+  'character_spell_cooldown': { replace: { 'SpellId': 'spell', 'ItemId': 'item', 'SpellExpireTime': 'time' }, ignore: { 'Category': true, 'CategoryExpireTime': true } },
+  'character_tutorial': true,
   'characters': { ignore: { 'exploredZones': true, 'equipmentCache': true, 'ammoId': true, 'knownTitles': true, 'actionBars': true }, replace: { 'power1': 'powerMana', 'power2': 'powerRage', 'power3': 'powerFocus', 'power4': 'powerEnergy', 'power5': 'powerHappiness' }},
   // 'creature_respawn'
   // 'event_group_chosen'
