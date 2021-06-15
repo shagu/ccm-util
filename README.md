@@ -64,3 +64,9 @@ If everything went fine, the output should look like this:
     Finalizing: character_spell.languages
     Finalizing: characters.data
     $
+
+## Scripts
+Use the scripts at your own risk. They work on my machine but I can't guarantee they will work for you.
+It's highly recommended to write your own ones or at least adapt the existing ones to your needs.
+
+- **cmangos-to-oregon-characters**: *migrates the `characters` table from cmangos-tbc to oregon-core*
