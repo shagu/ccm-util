@@ -1,13 +1,13 @@
-# cross core migration
-A low effort attempt that helps migrating character data between different world of warcraft emulators.
+# ccm-util
+ccm-util (cross-core-migration) is a low effort attempt, that helps migrating player data between different world of warcraft emulators.
 It provides helpful functions and wow specific mappings to ease the task of mapping different sql tables.
 
 ## Dependencies
 Make sure to have nodejs and npm installed.
 
     # pacman -Sy nodejs npm
-    $ git clone https://github.com/shagu/ccm-helper
-    $ cd ccm-helper
+    $ git clone https://github.com/shagu/ccm-util
+    $ cd ccm-util
     $ npm install
 
 ## Getting Started
