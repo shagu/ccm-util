@@ -1,5 +1,5 @@
+// command line parser
 var args = process.argv.slice(2);
-
 const script = args[0]
 const sourceDB = args[1]
 const destinationDB = args[2]
@@ -291,6 +291,8 @@ if((script === undefined) || (sourceDB === undefined) || (destinationDB === unde
   for (const [key, value] of Object.entries(migrations)) {
     console.log(`  - ${key}`)
   }
+
+  process.exit(1)
 } else if (migrations[script] === undefined) {
   console.log(`ERROR: Could not find script: ${script}!\n`)
 
@@ -298,6 +300,8 @@ if((script === undefined) || (sourceDB === undefined) || (destinationDB === unde
   for (const [key, value] of Object.entries(migrations)) {
     console.log(`  - ${key}`)
   }
+
+  process.exit(1)
 } else {
   for (const [key, value] of Object.entries(migrations[script])) {
     migrate(sourceDB, destinationDB, key, value, migrations[script]).then((pool) => { pool.end(); dbcount++ })
