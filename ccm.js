@@ -226,10 +226,10 @@ async function migrate(source, dest, table, modifiers, basetable) {
 // check for all arguments to exist
 if((script === undefined) || (sourceDB === undefined) || (destinationDB === undefined)){
   console.log("USAGE:")
-  console.log("  node index.js <script> <source> <destination>\n")
+  console.log("  node ccm.js <script> <source> <destination>\n")
 
   console.log("EXAMPLE:")
-  console.log("  node index.js cmangos-to-oregon-characters cmangos_chars characters\n")
+  console.log("  node ccm.js cmangos-to-oregon-characters cmangos_chars characters\n")
 
   console.log(`SCRIPTS:`)
   for (const [key, value] of Object.entries(migrations)) {
