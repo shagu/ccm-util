@@ -1,14 +1,15 @@
+var args = process.argv.slice(2);
+
+const script = args[0]
+const sourceDB = args[1]
+const destinationDB = args[2]
+
 // config
 const mysql_host = "localhost"
 const mysql_user = "mangos"
 const mysql_pass = "mangos"
 
-const cmangos_realmd = "cmangos_realmd"
-const cmangos_characters = "cmangos_chars"
-
-const oregon_realmd = "realmd"
-const oregon_characters = "characters"
-
+// mappings
 const languagemap = {
   // skill: spell
   98: 668, // Language: Common
@@ -139,7 +140,8 @@ async function oregon_character_pet_abdata(source, dest) {
   }
 }
 
-const characters = {
+let migrations = {}
+migrations["cmangos-to-oregon-characters"] = {
   // TODO: 'guild_bank_eventlog': { rename: { 'EventType': 'LogEntry'}},
   //    Duplicate entry '3-0' for key 'PRIMARY'
   //    sql: INSERT INTO characters.guild_bank_eventlog (guildid,LogGuid,TabId,LogEntry,PlayerGuid,ItemOrMoney,ItemStackCount,DestTabId,TimeStamp) VALUES (3,0,1,1,21,21885,1,0,1623599399);
@@ -277,6 +279,27 @@ async function migrate(source, dest, table, modifiers, basetable) {
   }
 }
 
-for (const [key, value] of Object.entries(characters)) {
-  migrate(cmangos_characters, oregon_characters, key, value, characters).then((pool) => { pool.end(); dbcount++ })
+// check for all arguments to exist
+if((script === undefined) || (sourceDB === undefined) || (destinationDB === undefined)){
+  console.log("USAGE:")
+  console.log("  node index.js <script> <source> <destination>\n")
+
+  console.log("EXAMPLE:")
+  console.log("  node index.js cmangos-to-oregon-characters cmangos_chars characters\n")
+
+  console.log(`SCRIPTS:`)
+  for (const [key, value] of Object.entries(migrations)) {
+    console.log(`  - ${key}`)
+  }
+} else if (migrations[script] === undefined) {
+  console.log(`ERROR: Could not find script: ${script}!\n`)
+
+  console.log(`SCRIPTS:`)
+  for (const [key, value] of Object.entries(migrations)) {
+    console.log(`  - ${key}`)
+  }
+} else {
+  for (const [key, value] of Object.entries(migrations[script])) {
+    migrate(sourceDB, destinationDB, key, value, migrations[script]).then((pool) => { pool.end(); dbcount++ })
+  }
 }
