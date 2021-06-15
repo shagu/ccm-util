@@ -16,7 +16,6 @@ const characters = {
   //
   // TODO: 'characters'
   //    Check the ignored values: exploredZones, equipmentCache, ammoId, knownTitles, actionBars
-  //    The characters.data table is required by OregonCore but does not exist in CMaNGOS
   //
   // List of all CMaNGOS tables with contents:
 
@@ -206,18 +205,22 @@ async function convert(cmangos, oregon, table, replaces) {
         if(first) {first = false} else {query = query + ","}
 
         let escaped = value
-        if(typeof(escaped) === "string") {
-          escaped = "'" + escaped.toString().replace(/'/g, "''") + "'"
-        }
-
         if ((replaces.fill) && (typeof(replaces.fill[key]) !== 'undefined')) {
           escaped = replaces.fill[key]
+        }
+
+        if(typeof(escaped) === "string") {
+          escaped = "'" + escaped.toString().replace(/'/g, "''") + "'"
         }
 
         query = query + `${escaped}`
       }
 
       query = query + ');'
+
+      if(replaces.wipe === true){
+        query = 'SELECT 1 as val'
+      }
 
       threadcount++
       let res = await conn.query(query).then(() => {
