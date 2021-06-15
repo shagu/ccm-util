@@ -147,6 +147,33 @@ async function fixlang(oregon) {
   }
 }
 
+async function fixpet(oregon) {
+  console.log("Fixing Pet Spells/Bars")
+  const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    // fix character_pet abdata values
+    let res = await conn.query(`UPDATE ${oregon}.pet_spell SET active=33024 WHERE active IN (193);`)
+
+    // fix character_pet abdata values
+    let rows = await conn.query("SELECT id, abdata from " + oregon + ".character_pet")
+    rows.forEach(async function(row) {
+      let abdata = row.abdata
+      abdata = abdata.replace(/7 2 7 1 7 0/g, "1792 2 1792 1 1792 0") // attack/follow/stay identifier
+      abdata = abdata.replace(/6 2 6 1 6 0/g, "1536 2 1536 1 1536 0") // aggressive/defensive/passive identifier
+      abdata = abdata.replace(/ 193 /g, " 33024 ") // actionbar identifier
+      let res = await conn.query(`UPDATE ${oregon}.character_pet SET abdata='${abdata}' WHERE id IN (${row.id});`)
+    });
+  } catch (err) {
+    throw err
+  } finally {
+    if (conn) conn.release()
+    return pool
+  }
+}
+
 async function guessdata(oregon) {
   console.log("Guess character data fields")
   const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
@@ -230,6 +257,9 @@ async function convert(cmangos, oregon, table, replaces) {
         if ((threadcount === 0) && (dbcount >= Object.keys(characters).length)){
           // Add Language Spells for each matching Skill
           fixlang(oregon_characters).then((pool) => { pool.end() })
+
+          // Add proper pet spell/actionbars identifiers
+          fixpet(oregon_characters).then((pool) => { pool.end() })
 
           // Add guessed data fields
           guessdata(oregon_characters).then((pool) => { pool.end() })
