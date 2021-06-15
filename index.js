@@ -10,7 +10,7 @@ const oregon_realmd = "realmd"
 const oregon_characters = "characters"
 
 const characters = {
-  // TODO: 'guild_bank_eventlog': { replace: { 'EventType': 'LogEntry'}},
+  // TODO: 'guild_bank_eventlog': { rename: { 'EventType': 'LogEntry'}},
   //    Duplicate entry '3-0' for key 'PRIMARY'
   //    sql: INSERT INTO characters.guild_bank_eventlog (guildid,LogGuid,TabId,LogEntry,PlayerGuid,ItemOrMoney,ItemStackCount,DestTabId,TimeStamp) VALUES (3,0,1,1,21,21885,1,0,1623599399);
   //
@@ -34,16 +34,16 @@ const characters = {
   'character_skills': true,
   'character_social': true,
   'character_spell': true,
-  'character_spell_cooldown': { replace: { 'SpellId': 'spell', 'ItemId': 'item', 'SpellExpireTime': 'time' }, ignore: { 'Category': true, 'CategoryExpireTime': true } },
+  'character_spell_cooldown': { rename: { 'SpellId': 'spell', 'ItemId': 'item', 'SpellExpireTime': 'time' }, ignore: { 'Category': true, 'CategoryExpireTime': true } },
   'character_tutorial': true,
-  'characters': { ignore: { 'exploredZones': true, 'equipmentCache': true, 'ammoId': true, 'knownTitles': true, 'actionBars': true }, replace: { 'power1': 'powerMana', 'power2': 'powerRage', 'power3': 'powerFocus', 'power4': 'powerEnergy', 'power5': 'powerHappiness' }},
+  'characters': { ignore: { 'exploredZones': true, 'equipmentCache': true, 'ammoId': true, 'knownTitles': true, 'actionBars': true }, rename: { 'power1': 'powerMana', 'power2': 'powerRage', 'power3': 'powerFocus', 'power4': 'powerEnergy', 'power5': 'powerHappiness' }},
   // 'creature_respawn'
   // 'event_group_chosen'
   // 'game_event_status'
   // 'gameobject_respawn'
   // 'gm_tickets'
   'guild': { fill: { 'createdate': 0 }},
-  //'guild_bank_eventlog': { replace: { 'EventType': 'LogEntry'}}, -- see TODO
+  //'guild_bank_eventlog': { rename: { 'EventType': 'LogEntry'}}, -- see TODO
   'guild_bank_item': true,
   'guild_bank_right': true,
   'guild_bank_tab': true,
@@ -57,7 +57,7 @@ const characters = {
   'item_text': true,
   'mail': true,
   'mail_items': true,
-  'pet_aura': { replace: { 'item_guid': 'item_caster_guid', 'effIndexMask': 'effect_index' }, ignore: { 'basepoints0': true, 'basepoints1': true,  'basepoints2': true, 'periodictime0': true, 'periodictime1': true,  'periodictime2': true, }},
+  'pet_aura': { rename: { 'item_guid': 'item_caster_guid', 'effIndexMask': 'effect_index' }, ignore: { 'basepoints0': true, 'basepoints1': true,  'basepoints2': true, 'periodictime0': true, 'periodictime1': true,  'periodictime2': true, }},
   'pet_spell': true,
   'pet_spell_cooldown': true,
   // 'petition_sign'
@@ -199,7 +199,7 @@ async function guessdata(oregon) {
 
 let threadcount = 0
 let dbcount = 0
-async function convert(cmangos, oregon, table, replaces) {
+async function convert(cmangos, oregon, table, modifiers) {
   console.log("Processing: " + table)
   const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
 
@@ -213,12 +213,12 @@ async function convert(cmangos, oregon, table, replaces) {
       let first = true
 
       for (const [key, value] of Object.entries(row)) {
-        if ((replaces.ignore) && (replaces.ignore[key])) continue
+        if ((modifiers.ignore) && (modifiers.ignore[key])) continue
         if(first) {first = false} else {query = query + ","}
 
         let modkey = key
-        if ((replaces.replace) && (replaces.replace[key])) {
-          modkey = replaces.replace[key]
+        if ((modifiers.rename) && (modifiers.rename[key])) {
+          modkey = modifiers.rename[key]
         }
 
         query = query + `${modkey}`
@@ -228,12 +228,12 @@ async function convert(cmangos, oregon, table, replaces) {
       first = true
 
       for (const [key, value] of Object.entries(row)) {
-        if ((replaces.ignore) && (replaces.ignore[key])) continue
+        if ((modifiers.ignore) && (modifiers.ignore[key])) continue
         if(first) {first = false} else {query = query + ","}
 
         let escaped = value
-        if ((replaces.fill) && (typeof(replaces.fill[key]) !== 'undefined')) {
-          escaped = replaces.fill[key]
+        if ((modifiers.fill) && (typeof(modifiers.fill[key]) !== 'undefined')) {
+          escaped = modifiers.fill[key]
         }
 
         if(typeof(escaped) === "string") {
@@ -245,7 +245,7 @@ async function convert(cmangos, oregon, table, replaces) {
 
       query = query + ');'
 
-      if(replaces.wipe === true){
+      if(modifiers.wipe === true){
         query = 'SELECT 1 as val'
       }
 
