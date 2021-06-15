@@ -85,6 +85,30 @@ const languagemap = {
   315: 7341, // Language: Troll
 }
 
+const modelmap = {
+  // 'race gender': model
+  '1 0': 49, // human (m)
+  '1 1': 50, // human (w)
+  '2 0': 51, // orc (m)
+  '2 1': 52, // orc (w)
+  '3 0': 53, // dwarf (m)
+  '3 1': 54, // dwarf (w)
+  '4 0': 55, // nelf (m)
+  '4 1': 56, // nelf (w)
+  '5 0': 57, // undead (m)
+  '5 1': 58, // undead (w)
+  '6 0': 59, // taure (m)
+  '6 1': 60, // taure (w)
+  '8 0': 1478, // troll (m)
+  '8 1': 1479, // troll (w)
+  '7 0': 1563, // gnome (m)
+  '7 1': 1564, // gnome (w)
+  '10 0': 15476, // belf (m)
+  '10 1': 15475, // belf (w)
+  '11 0': 16125, // draenei (m)
+  '11 1': 16126, // drawnei (w)
+}
+
 const bitmasks = {
   // race, class, gender
   '1 1 0': 16777473, '1 1 1': 16843009, '1 2 0': 513, '1 2 1': 66049, '1 4 0': 50332673, '1 4 1': 50398209, '1 5 0': 1281, '1 5 1': 66817, '1 8 0': 2049, '1 8 1': 67585, '1 9 0': 2305, '1 9 1': 67841,
@@ -134,7 +158,8 @@ async function guessdata(oregon) {
     let rows = await conn.query("SELECT * from " + oregon + ".characters")
     rows.forEach(async function(row) {
       let bitmask = bitmasks[`${row.race} ${row.class} ${row.gender}`]
-      let estimate = `${row.guid} 0 25 0 1065353216 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${row.health} ${row.powerMana} ${row.powerRage} ${row.powerFocus} ${row.powerEnergy} ${row.powerHappiness} ${row.health} 0 1000 0 100 0 ${row.level} ${row.race} ${bitmask}${"".padStart(115*2," 0")} 52 52${"".padStart(85*2," 0")} ${row.playerBytes} ${row.playerBytes2}${"".padStart(1351*2," 0")}`
+      let model = modelmap[`${row.race} ${row.gender}`]
+      let estimate = `${row.guid} 0 25 0 1065353216 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${row.health} ${row.powerMana} ${row.powerRage} ${row.powerFocus} ${row.powerEnergy} ${row.powerHappiness} ${row.health} 0 1000 0 100 0 ${row.level} ${row.race} ${bitmask}${"".padStart(115*2," 0")} ${model} ${model}${"".padStart(85*2," 0")} ${row.playerBytes} ${row.playerBytes2}${"".padStart(1351*2," 0")}`
       let query = `UPDATE ${oregon}.characters SET data='${estimate}' WHERE guid IN (${row.guid});`
       let res = await conn.query(query)
     });
