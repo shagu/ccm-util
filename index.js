@@ -85,6 +85,20 @@ const languagemap = {
   315: 7341, // Language: Troll
 }
 
+const bitmasks = {
+  // race, class, gender
+  '1 1 0': 16777473, '1 1 1': 16843009, '1 2 0': 513, '1 2 1': 66049, '1 4 0': 50332673, '1 4 1': 50398209, '1 5 0': 1281, '1 5 1': 66817, '1 8 0': 2049, '1 8 1': 67585, '1 9 0': 2305, '1 9 1': 67841,
+  '2 1 0': 16777474, '2 1 1': 16843010, '2 3 0': 770, '2 3 1': 66306, '2 4 0': 50332674, '2 4 1': 50398210, '2 7 0': 1794, '2 7 1': 67330, '2 9 0': 2306, '2 9 1': 67842,
+  '3 1 0': 16777475, '3 1 1': 16843011, '3 2 0': 515, '3 2 1': 66051, '3 3 0': 771, '3 3 1': 66307, '3 4 0': 50332675, '3 4 1': 50398211, '3 5 0': 1283, '3 5 1': 66819,
+  '4 1 0': 16777476, '4 1 1': 16843012, '4 3 0': 772, '4 3 1': 66308, '4 4 0': 50332676, '4 4 1': 50398212, '4 5 0': 1284, '4 5 1': 66820, '4 11 0': 2820, '4 11 1': 68356,
+  '5 1 0': 16777477, '5 1 1': 16843013, '5 4 0': 50332677, '5 4 1': 50398213, '5 5 0': 1285, '5 5 1': 66821, '5 8 0': 2053, '5 8 1': 67589, '5 9 0': 2309, '5 9 1': 67845,
+  '6 1 0': 16777478, '6 1 1': 16843014, '6 3 0': 774, '6 3 1': 66310, '6 7 0': 1798, '6 7 1': 67334, '6 11 0': 2822, '6 11 1': 68358,
+  '7 1 0': 16777479, '7 1 1': 16843015, '7 4 0': 50332679, '7 4 1': 50398215, '7 8 0': 2055, '7 8 1': 67591, '7 9 0': 2311, '7 9 1': 67847,
+  '8 1 0': 16777480, '8 1 1': 16843016, '8 3 0': 776, '8 3 1': 66312, '8 4 0': 50332680, '8 4 1': 50398216, '8 5 0': 1288, '8 5 1': 66824, '8 7 0': 1800, '8 7 1': 67336, '8 8 0': 2056, '8 8 1': 67592,
+  '10 2 0': 522, '10 2 1': 66058, '10 3 0': 778, '10 3 1': 66314, '10 4 0': 50332682, '10 4 1': 50398218, '10 5 0': 1290, '10 5 1': 66826, '10 8 0': 2058, '10 8 1': 67594, '10 9 0': 2314, '10 9 1': 67850,
+  '11 1 0': 16777483, '11 1 1': 16843019, '11 2 0': 523, '11 2 1': 66059, '11 3 0': 779, '11 3 1': 66315, '11 5 0': 1291, '11 5 1': 66827, '11 7 0': 1803, '11 7 1': 67339, '11 8 0': 2059, '11 8 1': 67595,
+}
+
 const mariadb = require('mariadb')
 
 async function fixlang(oregon) {
@@ -103,9 +117,31 @@ async function fixlang(oregon) {
       }
     });
   } catch (err) {
-  	throw err
+    throw err
   } finally {
-	  if (conn) conn.release()
+    if (conn) conn.release()
+    return pool
+  }
+}
+
+async function guessdata(oregon) {
+  console.log("Guess character data fields")
+  const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    let rows = await conn.query("SELECT * from " + oregon + ".characters")
+    rows.forEach(async function(row) {
+      let bitmask = bitmasks[`${row.race} ${row.class} ${row.gender}`]
+      let estimate = `${row.guid} 0 25 0 1065353216 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${row.health} ${row.powerMana} ${row.powerRage} ${row.powerFocus} ${row.powerEnergy} ${row.powerHappiness} ${row.health} 0 1000 0 100 0 ${row.level} ${row.race} ${bitmask}${"".padStart(115*2," 0")} 52 52${"".padStart(85*2," 0")} ${row.playerBytes} ${row.playerBytes2}${"".padStart(1351*2," 0")}`
+      let query = `UPDATE ${oregon}.characters SET data='${estimate}' WHERE guid IN (${row.guid});`
+      let res = await conn.query(query)
+    });
+  } catch (err) {
+    throw err
+  } finally {
+    if (conn) conn.release()
     return pool
   }
 }
@@ -162,16 +198,20 @@ async function convert(cmangos, oregon, table, replaces) {
       let res = await conn.query(query).then(() => {
         threadcount--
 
-        // Add Language Spells for each matching Skill
+        // Wait for all write threads to finish
         if ((threadcount === 0) && (dbcount >= Object.keys(characters).length)){
+          // Add Language Spells for each matching Skill
           fixlang(oregon_characters).then((pool) => { pool.end() })
+
+          // Add guessed data fields
+          guessdata(oregon_characters).then((pool) => { pool.end() })
         }
       })
     });
   } catch (err) {
-  	throw err
+    throw err
   } finally {
-	  if (conn) conn.release()
+    if (conn) conn.release()
     return pool
   }
 }
