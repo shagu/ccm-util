@@ -58,9 +58,9 @@ const characters = {
   'item_text': true,
   'mail': true,
   'mail_items': true,
-  // 'pet_aura'
+  'pet_aura': { replace: { 'item_guid': 'item_caster_guid', 'effIndexMask': 'effect_index' }, ignore: { 'basepoints0': true, 'basepoints1': true,  'basepoints2': true, 'periodictime0': true, 'periodictime1': true,  'periodictime2': true, }},
   'pet_spell': true,
-  // 'pet_spell_cooldown'
+  'pet_spell_cooldown': true,
   // 'petition_sign'
   // 'saved_variables'
   // 'world'
@@ -110,7 +110,7 @@ const modelmap = {
 }
 
 const bitmasks = {
-  // race, class, gender
+  // 'race class gender': mask
   '1 1 0': 16777473, '1 1 1': 16843009, '1 2 0': 513, '1 2 1': 66049, '1 4 0': 50332673, '1 4 1': 50398209, '1 5 0': 1281, '1 5 1': 66817, '1 8 0': 2049, '1 8 1': 67585, '1 9 0': 2305, '1 9 1': 67841,
   '2 1 0': 16777474, '2 1 1': 16843010, '2 3 0': 770, '2 3 1': 66306, '2 4 0': 50332674, '2 4 1': 50398210, '2 7 0': 1794, '2 7 1': 67330, '2 9 0': 2306, '2 9 1': 67842,
   '3 1 0': 16777475, '3 1 1': 16843011, '3 2 0': 515, '3 2 1': 66051, '3 3 0': 771, '3 3 1': 66307, '3 4 0': 50332675, '3 4 1': 50398211, '3 5 0': 1283, '3 5 1': 66819,
