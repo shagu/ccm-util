@@ -217,6 +217,8 @@ async function migrate(source, dest, table, modifiers, basetable) {
 
         if(typeof(escaped) === "string") {
           escaped = "'" + escaped.toString().replace(/'/g, "''") + "'"
+        } else if((typeof(escaped) === "object") && (escaped instanceof Date)) {
+          escaped = `'${escaped.toISOString().slice(0, 19).replace('T', ' ')}'`
         }
 
         query = query + `${escaped}`
