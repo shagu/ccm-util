@@ -164,6 +164,10 @@ migrations["cmangos-to-oregon-characters"] = {
   // 'world_state'
 }
 
+migrations["cmangos-to-oregon-realmd"] = {
+  'account': { fill: { 'locale': 0 }, ignore: { 'gmlevel': true, 'active_realm_id': true }, rename: { 'lockedIp': 'last_ip', 'token': 'token_key' }},
+}
+
 let threadcount = 0
 let dbcount = 0
 let finalize_queue = { }
