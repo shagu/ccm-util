@@ -35,7 +35,7 @@ async function oregon_characters_data(source, dest) {
   }
 }
 
-// add all spells that should be available indicated by skills
+// add all languages that should be available indicated by skills
 async function oregon_character_spell_languages(source, dest) {
   const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
 
@@ -45,7 +45,29 @@ async function oregon_character_spell_languages(source, dest) {
     let rows = await conn.query("SELECT * from " + dest + ".character_skills")
     rows.forEach(async function(row) {
       if(mappings.language[row.skill]) {
-        let query = "INSERT INTO " + dest + `.character_spell (guid, spell, active, disabled) VALUES (${row.guid}, ${mappings.language[row.skill]}, 1, 0)`
+        let query = "REPLACE INTO " + dest + `.character_spell (guid, spell, active, disabled) VALUES (${row.guid}, ${mappings.language[row.skill]}, 1, 0)`
+        let res = await conn.query(query)
+      }
+    });
+  } catch (err) {
+    throw err
+  } finally {
+    if (conn) conn.release()
+    return pool
+  }
+}
+
+// add all equipment spells that should be available indicated by skills
+async function oregon_character_spell_equipment(source, dest) {
+  const pool = mariadb.createPool({host: mysql_host, user: mysql_user, password: mysql_pass, connectionLimit: 50});
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    let rows = await conn.query("SELECT * from " + dest + ".character_skills")
+    rows.forEach(async function(row) {
+      if(mappings.equipment[row.skill]) {
+        let query = "REPLACE INTO " + dest + `.character_spell (guid, spell, active, disabled) VALUES (${row.guid}, ${mappings.equipment[row.skill]}, 1, 0)`
         let res = await conn.query(query)
       }
     });
@@ -109,7 +131,7 @@ migrations["cmangos-to-oregon-characters"] = {
   'character_reputation': true,
   'character_skills': true,
   'character_social': true,
-  'character_spell': { finalize: { 'languages': oregon_character_spell_languages }},
+  'character_spell': { finalize: { 'languages': oregon_character_spell_languages, 'equipment': oregon_character_spell_equipment }},
   'character_spell_cooldown': { rename: { 'SpellId': 'spell', 'ItemId': 'item', 'SpellExpireTime': 'time' }, ignore: { 'Category': true, 'CategoryExpireTime': true } },
   'character_tutorial': true,
   'characters': { ignore: { 'exploredZones': true, 'equipmentCache': true, 'ammoId': true, 'knownTitles': true, 'actionBars': true }, rename: { 'power1': 'powerMana', 'power2': 'powerRage', 'power3': 'powerFocus', 'power4': 'powerEnergy', 'power5': 'powerHappiness' }, finalize: { 'data': oregon_characters_data }},
