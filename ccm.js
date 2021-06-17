@@ -70,6 +70,27 @@ async function oregon_character_spell_equipment(source, dest) {
   }
 }
 
+// add missing spells that should be learned on playercreate
+async function oregon_character_spell_battlestance(source, dest) {
+  let oregonworld = "world"
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    let rows = await conn.query("SELECT guid, class, race from " + dest + ".characters")
+      for await (row of rows) {
+        let spells = await conn.query(`SELECT Spell, Active from ${oregonworld}.playercreateinfo_spell WHERE class = ${row.class} AND race = ${row.race}`)
+        for await (spell of spells) {
+          await conn.query(`INSERT IGNORE INTO ${dest}.character_spell (guid, spell, active, disabled) VALUES (${row.guid}, ${spell.Spell}, ${spell.Active}, 0)`)
+      }
+    }
+  } catch (err) {
+    throw err
+  } finally {
+    if (conn) await conn.release()
+  }
+}
+
 // convert cmangos pet action identifiers to oregon format
 async function oregon_character_pet_abdata(source, dest) {
   let conn;
@@ -120,7 +141,7 @@ migrations["cmangos-to-oregon-characters"] = {
   'character_reputation': true,
   'character_skills': true,
   'character_social': true,
-  'character_spell': { finalize: { 'languages': oregon_character_spell_languages, 'equipment': oregon_character_spell_equipment }},
+  'character_spell': { finalize: { 'languages': oregon_character_spell_languages, 'equipment': oregon_character_spell_equipment, 'battlestance': oregon_character_spell_battlestance }},
   'character_spell_cooldown': { rename: { 'SpellId': 'spell', 'ItemId': 'item', 'SpellExpireTime': 'time' }, ignore: { 'Category': true, 'CategoryExpireTime': true } },
   'character_tutorial': true,
   'characters': { ignore: { 'exploredZones': true, 'equipmentCache': true, 'ammoId': true, 'knownTitles': true, 'actionBars': true }, rename: { 'power1': 'powerMana', 'power2': 'powerRage', 'power3': 'powerFocus', 'power4': 'powerEnergy', 'power5': 'powerHappiness' }, finalize: { 'data': oregon_characters_data }},
