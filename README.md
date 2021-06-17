@@ -70,3 +70,4 @@ Use the scripts at your own risk. They work on my machine but I can't guarantee 
 It's highly recommended to write your own ones or at least adapt the existing ones to your needs.
 
 - **cmangos-to-oregon-characters**: *migrates the `characters` table from cmangos-tbc to oregon-core*
+- **cmangos-to-oregon-realmd**: *migrates the `realmd` table from cmangos-tbc to oregon-core*
