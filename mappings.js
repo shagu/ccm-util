@@ -18,6 +18,34 @@ mappings.language = {
   315: 7341, // Language: Troll
 }
 
+mappings.equipment = {
+  // skill: spell
+  // weapons
+  44: 196, // Axes
+  172: 197, // Axes 2-handed
+  45: 264, // Bows
+  46: 266, // Guns
+  54: 198, // Maces
+  160: 199, // Maces 2-handed
+  229: 200, // Polearms
+  43: 201, // Swords
+  55: 202, // Swords 2-handed
+  136: 227, // Staves
+  173: 1180, // Daggers
+  176: 2567, // Thrown
+  227: 3386, // Spears
+  226: 5011, // Crossbows
+  228: 5009, // Wands
+  // abilities
+  118: 674,// Dual Wield
+  // armor
+  433: 9116, // Shield
+  415: 9078, // Cloth
+  414: 9077, // Leather
+  413: 8737, // Mail
+  293: 750, // Plate
+}
+
 mappings.models = {
   // 'race gender': model
   '1 0': 49, // human (m)
